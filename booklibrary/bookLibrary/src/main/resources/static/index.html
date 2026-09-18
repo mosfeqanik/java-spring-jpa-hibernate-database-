@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Book API Tester</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      padding: 30px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .request-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    select {
+      padding: 10px;
+      font-size: 14px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      font-size: 14px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    textarea {
+      width: 100%;
+      height: 150px;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-family: monospace;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 12px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    pre {
+      background: #f0f0f0;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 20px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Book API Tester</h1>
+
+    <!-- Method + URL -->
+    <div class="request-bar">
+      <select id="method" onchange="toggleBody()">
+        <option value="POST">POST</option>
+        <option value="GET">GET</option>
+      </select>
+
+      <input type="text" id="url" value="/api/books">
+    </div>
+
+    <!-- JSON Body -->
+    <textarea id="jsonBody" placeholder='{
+  "title": "Spring Boot",
+  "author": "John"
+}'></textarea>
+
+    <button onclick="sendRequest()">Send</button>
+
+    <h3>Response</h3>
+    <pre id="response"></pre>
+  </div>
+
+  <script>
+    function toggleBody() {
+      const method = document.getElementById("method").value;
+      const body = document.getElementById("jsonBody");
+      const urlInput = document.getElementById("url");
+
+      body.style.display = method === "POST" ? "block" : "none";
+
+      if (method === "GET") {
+        urlInput.value = "/api/books";
+      } else {
+        urlInput.value = "/api/books";
+      }
+    }
+
+    async function sendRequest() {
+      const method = document.getElementById("method").value;
+      const url = document.getElementById("url").value;
+      const body = document.getElementById("jsonBody").value;
+      const responseBox = document.getElementById("response");
+
+      try {
+        const options = { method };
+
+        if (method === "POST") {
+          options.headers = { "Content-Type": "application/json" };
+          options.body = body;
+        }
+
+        const response = await fetch(url, options);
+        const text = await response.text();
+        responseBox.textContent = text;
+      } catch (error) {
+        responseBox.textContent = "Error: " + error;
+      }
+    }
+
+    toggleBody();
+  </script>
+</body>
+</html>
