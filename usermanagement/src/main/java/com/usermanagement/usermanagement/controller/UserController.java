@@ -40,13 +40,20 @@ public class UserController {
     }
 
     // Update user email
-    @PutMapping("/{id}/email")
+  @PutMapping("/{id}/email")
     public User updateUserEmail(@PathVariable Long id, @RequestBody User updatedUser) {
+        System.out.println("id id ididiiididid"+id);
 
         // Step 1: Find user by id
         User user = userRepository.findById(id)
-                .orElseThrow(() -> 
-                     new UserNotFoundException("user not found with id: " + id));
+                .orElseThrow(() -> {
+    UserNotFoundException exception =
+            new UserNotFoundException("User not found with id: " + id);
+
+    System.out.println("EXCEPTION MESSAGE = " + exception.getMessage());
+
+    return exception;
+});
         // Step 2: Update email
         user.setEmail(updatedUser.getEmail());
 
