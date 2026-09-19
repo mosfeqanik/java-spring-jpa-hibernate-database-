@@ -1,11 +1,11 @@
-package com.example.demo.controller;
+package com.studentManagement.studentManagement.controller;
 
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-import com.example.demo.model.Student;
-import com.example.demo.repository.StudentRepository;
+import com.studentManagement.studentManagement.model.Student;
+import com.studentManagement.studentManagement.repository.StudentRepository;
 
 @RestController
 @RequestMapping("/api/students")
