@@ -1,11 +1,11 @@
-package com.example.demo.controller;
+package com.usermanagement.usermanagement.controller;
 
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
-import com.example.demo.model.User;
-import com.example.demo.repository.UserRepository;
-import com.example.demo.exception.UserNotFoundException;
+import com.usermanagement.usermanagement.model.User;
+import com.usermanagement.usermanagement.UserRepository;
+import com.usermanagement.usermanagement.exception.UserNotFoundException;
 
 @RestController
 @RequestMapping("/api/users")
