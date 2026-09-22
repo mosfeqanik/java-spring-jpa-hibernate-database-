@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Booking Engine</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #4338ca;
+            --success: #10B981;
+            --danger: #EF4444;
+            --bg: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text-main: #1F2937;
+            --text-sub: #6B7280;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 2rem;
+            width: 900px;
+            max-width: 95%;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s;
+        }
+
+        .card:hover { transform: translateY(-2px); }
+
+        .flight-header {
+            border-bottom: 2px solid #E5E7EB;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .flight-route {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .flight-id { font-size: 0.9rem; color: var(--text-sub); font-weight: 600; margin-top: 0.25rem; }
+
+        .seat-display {
+            background: #EEF2FF;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid #C7D2FE;
+        }
+
+        .seat-number {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: block;
+            line-height: 1;
+        }
+
+        .seat-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-sub); margin-top: 0.5rem; display: block; }
+
+        .form-group { margin-bottom: 1.25rem; }
+        
+        label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-main); }
+        
+        input {
+            width: 100%;
+            padding: 0.85rem;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+
+        .btn-book {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-book:hover { background-color: var(--primary-dark); transform: translateY(-1px); }
+        .btn-book:active { transform: translateY(0); }
+
+        #status-area {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .status-success { background-color: #D1FAE5; color: #065F46; border-left: 4px solid var(--success); }
+        .status-error { background-color: #FEE2E2; color: #991B1B; border-left: 4px solid var(--danger); }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .badge-rollback { background-color: #FECACA; color: #991B1B; }
+        .badge-commit { background-color: #A7F3D0; color: #065F46; }
+
+        @media (max-width: 768px) {
+            .dashboard { grid-template-columns: 1fr; width: 90%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard">
+        <div class="card">
+            <div class="flight-header">
+                <div class="flight-route">
+                    ✈️ <span id="flightDest">Loading...</span>
+                </div>
+                <div class="flight-id" id="flightNum">Flight #...</div>
+            </div>
+            
+            <div class="seat-display">
+                <span id="seatCount" class="seat-number">--</span>
+                <span class="seat-label">Seats Remaining</span>
+            </div>
+
+            <div style="margin-top: 2rem; padding: 1rem; background: #fffbe6; border-radius: 8px; border: 1px solid #ffe58f; font-size: 0.85rem; color: #b7791f;">
+                <strong>💡 Hint:</strong><br>
+                The backend limit is <strong>$500</strong>.<br>
+                • Pay <strong>&le; 500</strong>: Success (Transaction Commits)<br>
+                • Pay <strong>> 500</strong>: Fail (Transaction Rolls Back)
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 style="margin-top: 0; margin-bottom: 1.5rem;">Book a Ticket</h2>
+            
+            <div class="form-group">
+                <label>Passenger Name</label>
+                <input type="text" id="passengerName" placeholder="e.g. John Doe" autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label>Payment Amount ($)</label>
+                <input type="number" id="amount" placeholder="Try 600 to trigger rollback..." autocomplete="off">
+            </div>
+
+            <button class="btn-book" onclick="bookFlight()" id="bookBtn">Confirm Booking</button>
+
+            <div id="status-area"></div>
+        </div>
+    </div>
+
+<script>
+    function getBackendDomain() {
+        const domain = window.location.hostname || window.currentURL;
+        const protocalPrefix = "https://";
+        const firstDotIndex = domain.indexOf('.');
+        const subdomain = domain.substring(0, firstDotIndex);
+        const restOfDomain = domain.substring(firstDotIndex);
+        return protocalPrefix + subdomain + "-backend" + restOfDomain;
+    }
+
+    const API_BASE = getBackendDomain() + "/api";
+    const FLIGHT_ID = 1;
+
+    const ui = {
+        dest: document.getElementById('flightDest'),
+        num: document.getElementById('flightNum'),
+        seats: document.getElementById('seatCount'),
+        name: document.getElementById('passengerName'),
+        amount: document.getElementById('amount'),
+        status: document.getElementById('status-area'),
+        btn: document.getElementById('bookBtn')
+    };
+
+    async function loadFlightData() {
+        try {
+            const res = await fetch(`${API_BASE}/${FLIGHT_ID}`);
+            if (!res.ok) throw new Error("API Connection Failed");
+            
+            const data = await res.json();
+            
+            ui.dest.textContent = `To ${data.destination}`;
+            ui.num.textContent = `Flight ${data.flightNumber}`;
+            animateValue(ui.seats, parseInt(ui.seats.innerText) || 0, data.availableSeats, 500);
+            
+        } catch (err) {
+            ui.dest.textContent = "System Offline";
+            ui.seats.textContent = "--";
+            console.error("Is Spring Boot running on port 8080?", err);
+        }
+    }
+
+    async function bookFlight() {
+        if (!ui.name.value || !ui.amount.value) {
+            showStatus("Please enter both Name and Amount.", "error");
+            return;
+        }
+
+        const payload = {
+            passengerName: ui.name.value,
+            amount: parseFloat(ui.amount.value),
+            flightId: FLIGHT_ID
+        };
+
+        ui.btn.disabled = true;
+        ui.btn.textContent = "Processing Transaction...";
+        ui.status.style.display = 'none';
+
+        try {
+            const res = await fetch(`${API_BASE}/book`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const text = await res.text();
+
+            if (res.ok) {
+                showStatus(
+                    `<span class="badge badge-commit">COMMIT</span><br>
+                    <strong>Success!</strong> ${text}`, 
+                    "success"
+                );
+                ui.name.value = "";
+                ui.amount.value = "";
+            } else {
+                showStatus(
+                    `<span class="badge badge-rollback">ROLLBACK</span><br>
+                    <strong>Transaction Failed!</strong> The system rolled back the seat deduction.<br>
+                    <em>Reason: ${text}</em>`, 
+                    "error"
+                );
+            }
+        } catch (err) {
+            showStatus("Network Error: Is the backend running?", "error");
+        } finally {
+            ui.btn.disabled = false;
+            ui.btn.textContent = "Confirm Booking";
+            
+            await loadFlightData(); 
+        }
+    }
+
+    function showStatus(html, type) {
+        ui.status.innerHTML = html;
+        ui.status.className = type === 'success' ? 'status-success' : 'status-error';
+        ui.status.style.display = 'block';
+    }
+
+    function animateValue(obj, start, end, duration) {
+        if (start === end || isNaN(start)) {
+            obj.innerHTML = end;
+            return;
+        }
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            obj.innerHTML = Math.floor(progress * (end - start) + start);
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            } else {
+                obj.innerHTML = end;
+            }
+        };
+        window.requestAnimationFrame(step);
+    }
+
+    loadFlightData();
+
+</script>
+
+</body>
+</html>
+
+
