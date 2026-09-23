@@ -1,7 +1,7 @@
-package com.example.demo.repository;
+package com.PatientAdmissionSystemProject.PatientAdmissionSystemProject.repository;
 
-import com.example.demo.model.Patient;
-import com.example.demo.model.PatientStatus;
+import com.PatientAdmissionSystemProject.PatientAdmissionSystemProject.model.Patient;
+import com.PatientAdmissionSystemProject.PatientAdmissionSystemProject.model.PatientStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

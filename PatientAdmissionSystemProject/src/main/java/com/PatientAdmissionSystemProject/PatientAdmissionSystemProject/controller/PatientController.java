@@ -1,9 +1,9 @@
-package com.example.demo.controller;
+package com.PatientAdmissionSystemProject.PatientAdmissionSystemProject.controller;
 
-import com.example.demo.dto.PatientAdmissionRequest;
-import com.example.demo.model.Patient;
-import com.example.demo.model.PatientStatus;
-import com.example.demo.service.PatientService;
+import com.PatientAdmissionSystemProject.PatientAdmissionSystemProject.dto.PatientAdmissionRequest;
+import com.PatientAdmissionSystemProject.PatientAdmissionSystemProject.model.Patient;
+import com.PatientAdmissionSystemProject.PatientAdmissionSystemProject.model.PatientStatus;
+import com.PatientAdmissionSystemProject.PatientAdmissionSystemProject.service.PatientService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

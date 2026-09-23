@@ -2,12 +2,12 @@
 
 
 
-package com.example.demo.service;
+package com.PatientAdmissionSystemProject.PatientAdmissionSystemProject.service;
 
-import com.example.demo.dto.PatientAdmissionRequest;
-import com.example.demo.model.Patient;
-import com.example.demo.model.PatientStatus;
-import com.example.demo.repository.PatientRepository;
+import com.PatientAdmissionSystemProject.PatientAdmissionSystemProject.dto.PatientAdmissionRequest;
+import com.PatientAdmissionSystemProject.PatientAdmissionSystemProject.model.Patient;
+import com.PatientAdmissionSystemProject.PatientAdmissionSystemProject.model.PatientStatus;
+import com.PatientAdmissionSystemProject.PatientAdmissionSystemProject.repository.PatientRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
