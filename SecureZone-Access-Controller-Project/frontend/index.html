@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureZone Access Controller</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --accent-color: #38bdf8;
+            --accent-hover: #0284c7;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #fbbf24;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .panel {
+            background-color: var(--panel-bg);
+            padding: 25px;
+            border-radius: 10px;
+            border-top: 4px solid var(--accent-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .panel h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--bg-color);
+            border: 1px solid #334155;
+            color: var(--text-main);
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--accent-color);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background-color: #b91c1c;
+        }
+
+        .console {
+            max-width: 1000px;
+            margin: 20px auto;
+            background-color: #000;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            height: 200px; 
+            overflow-y: auto; 
+            border: 1px solid #333;
+        }
+        
+        .log-entry {
+            margin-bottom: 8px;
+            border-bottom: 1px dashed #222;
+            padding-bottom: 4px;
+        }
+
+        .timestamp {
+            color: var(--warning);
+            margin-right: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            .panel {
+                padding: 15px;
+            }
+            .console {
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>SecureZone Access Controller</h1>
+
+    <div class="dashboard">
+        
+        <div class="panel">
+            <h2>1. Register Employee & RFID</h2>
+            <div class="form-group">
+                <label>Employee Name</label>
+                <input type="text" id="empName" placeholder="e.g. Jane Doe">
+            </div>
+            <div class="form-group">
+                <label>Department</label>
+                <input type="text" id="empDept" placeholder="e.g. Engineering">
+            </div>
+            <div class="form-group">
+                <label>RFID Card Number</label>
+                <input type="text" id="rfidNumber" placeholder="e.g. RFID-998877">
+            </div>
+            <button onclick="createEmployee()">Register Employee</button>
+        </div>
+
+        <div class="panel">
+            <h2>2. Create Secure Zone</h2>
+            <div class="form-group">
+                <label>Zone Name</label>
+                <input type="text" id="zoneName" placeholder="e.g. Server Room A">
+            </div>
+            <div class="form-group">
+                <label>Clearance Level</label>
+                <input type="text" id="clearanceLevel" placeholder="e.g. Level 5">
+            </div>
+            <button onclick="createZone()">Create Zone</button>
+        </div>
+
+        <div class="panel">
+            <h2>3. Grant Zone Access</h2>
+            <div class="form-group">
+                <label>Employee ID</label>
+                <input type="number" id="grantEmpId" placeholder="ID of Employee">
+            </div>
+            <div class="form-group">
+                <label>Secure Zone ID</label>
+                <input type="number" id="grantZoneId" placeholder="ID of Zone">
+            </div>
+            <button onclick="grantAccess()">Authorize Access</button>
+        </div>
+
+        <div class="panel">
+            <h2>4. Terminate Access</h2>
+            <div class="form-group">
+                <label>Employee ID to Terminate</label>
+                <input type="number" id="deleteEmpId" placeholder="ID of Employee to remove">
+            </div>
+            <button class="btn-danger" onclick="deleteEmployee()">Revoke & Delete</button>
+        </div>
+
+    </div>
+
+    <div class="console" id="systemLog">
+        <div class="log-entry" style="color: var(--success);">
+            <span class="timestamp">[SYSTEM]</span> > Ready. Awaiting commands...
+        </div>
+    </div>
+
+    <script>
+        
+        function getBackendDomain() {
+            const domain = window.location.hostname || window.currentURL;
+            const protocalPrefix = "https://";
+            const firstDotIndex = domain.indexOf('.');
+            const subdomain = domain.substring(0, firstDotIndex);
+            const restOfDomain = domain.substring(firstDotIndex);
+            return protocalPrefix + subdomain + "-backend" + restOfDomain;
+        }
+        
+        const API_BASE_URL = getBackendDomain() + '/api';
+
+        function logToConsole(message, isError = false) {
+            const logBox = document.getElementById('systemLog');
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.style.color = isError ? 'var(--danger)' : 'var(--success)';
+            
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+            
+            logEntry.innerHTML = `<span class="timestamp">[${time}]</span> > ${message}`;
+
+            logBox.appendChild(logEntry);
+            
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        async function createEmployee() {
+            const payload = {
+                name: document.getElementById('empName').value,
+                department: document.getElementById('empDept').value,
+                rfidCard: {
+                    cardNumber: document.getElementById('rfidNumber').value,
+                    issueDate: new Date().toISOString().split('T')[0]
+                }
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/employees`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                logToConsole(`Success! Employee created with ID: ${data.id}, RFID attached.`);
+            } catch (error) {
+                logToConsole(`Error creating employee: Make sure your Spring Boot server is running.`, true);
+            }
+        }
+
+        async function createZone() {
+            const payload = {
+                zoneName: document.getElementById('zoneName').value,
+                clearanceLevel: document.getElementById('clearanceLevel').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/zones`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                logToConsole(`Success! Secure Zone created with ID: ${data.id}`);
+            } catch (error) {
+                logToConsole(`Error creating zone.`, true);
+            }
+        }
+
+        async function grantAccess() {
+            const empId = document.getElementById('grantEmpId').value;
+            const zoneId = document.getElementById('grantZoneId').value;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/employees/${empId}/zones/${zoneId}`, {
+                    method: 'POST'
+                });
+                
+                if(response.ok) {
+                    logToConsole(`Access Granted: Employee ${empId} can now enter Zone ${zoneId}. Join table updated.`);
+                } else {
+                    logToConsole(`Error: Could not grant access. Check if IDs exist.`, true);
+                }
+            } catch (error) {
+                logToConsole(`Error connecting to server.`, true);
+            }
+        }
+
+        async function deleteEmployee() {
+            const empId = document.getElementById('deleteEmpId').value;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/employees/${empId}`, {
+                    method: 'DELETE'
+                });
+                
+                if(response.ok) {
+                    logToConsole(`Employee ${empId} and their RFID card removed securely.`);
+                } else {
+                    logToConsole(`Error: Could not delete employee.`, true);
+                }
+            } catch (error) {
+                logToConsole(`Error connecting to server.`, true);
+            }
+        }
+    </script>
+</body>
+</html>
+
+
