@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Helpdesk Ticket Resolver Project</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f8fafc;
+            --sidebar-bg: #0f172a;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body { display: flex; height: 100vh; background-color: var(--bg-color); overflow: hidden; }
+
+        .sidebar { width: 260px; background-color: var(--sidebar-bg); color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: all 0.3s ease; }
+        .logo { padding: 24px; font-size: 1.25rem; font-weight: 700; border-bottom: 1px solid #1e293b; color: #f8fafc; white-space: nowrap; }
+        .nav-links { list-style: none; padding: 20px 0; }
+        .nav-links li { padding: 14px 24px; color: #94a3b8; cursor: pointer; transition: 0.2s; font-weight: 500; }
+        .nav-links li.active { background-color: #1e293b; color: white; border-left: 4px solid var(--primary); }
+
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
+        .header { background: white; padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .header h1 { font-size: 1.5rem; color: var(--text-main); }
+        .header-actions { display: flex; gap: 16px; align-items: center; }
+        .user-profile { background: #eff6ff; color: var(--primary); padding: 8px 16px; border-radius: 999px; font-size: 0.875rem; font-weight: 600; white-space: nowrap; }
+        
+        .btn-primary { background-color: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.1); white-space: nowrap; }
+        .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
+        .btn-secondary { background-color: white; color: var(--text-main); border: 1px solid var(--border); padding: 10px 20px; border-radius: 6px; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-secondary:hover { background-color: #f1f5f9; }
+
+        .container { padding: 32px; max-width: 1200px; margin: 0 auto; width: 100%; }
+        
+        .tabs { display: flex; gap: 16px; margin-bottom: 24px; border-bottom: 1px solid var(--border); overflow-x: auto; -ms-overflow-style: none; scrollbar-width: none; }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab { padding: 12px 16px; cursor: pointer; color: var(--text-muted); font-weight: 500; border-bottom: 2px solid transparent; transition: 0.2s; white-space: nowrap; }
+        .tab.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
+
+        .table-card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 1px solid var(--border); overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 650px; }
+        th { background: #f8fafc; padding: 16px 24px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
+        td { padding: 20px 24px; border-bottom: 1px solid var(--border); color: var(--text-main); font-size: 0.875rem; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: #f8fafc; }
+
+        .issue-title { font-weight: 600; font-size: 0.95rem; display: block; margin-bottom: 4px; color: #0f172a; }
+        .issue-desc { color: var(--text-muted); font-size: 0.85rem; line-height: 1.4; }
+
+        .badge { padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.02em; display: inline-block; }
+        .badge-open { background-color: #fef2f2; color: #ef4444; border: 1px solid #fca5a5; }
+        .badge-resolved { background-color: #f0fdf4; color: #16a34a; border: 1px solid #86efac; }
+        .text-muted { color: var(--text-muted); font-style: italic; font-size: 0.875rem; }
+        .empty-state { padding: 40px; text-align: center; color: var(--text-muted); }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); display: none; justify-content: center; align-items: center; z-index: 50; backdrop-filter: blur(2px); padding: 16px; }
+        .modal { background: white; width: 100%; max-width: 450px; padding: 24px; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .modal h2 { margin-bottom: 20px; font-size: 1.25rem; color: var(--text-main); }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 8px; color: var(--text-main); }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.875rem; outline: none; transition: border-color 0.2s; }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+
+        @media (max-width: 850px) {
+            body { flex-direction: column; overflow-y: auto; }
+            .sidebar { width: 100%; flex-direction: row; align-items: center; justify-content: space-between; padding: 0 24px; border-bottom: 1px solid #1e293b; }
+            .logo { border-bottom: none; padding: 16px 0; }
+            .nav-links { display: flex; padding: 0; margin: 0; }
+            .nav-links li { padding: 16px 20px; border-left: none; border-bottom: 3px solid transparent; }
+            .nav-links li.active { background-color: transparent; border-left: none; border-bottom: 3px solid var(--primary); color: white; }
+            .main-content { overflow: visible; }
+        }
+
+        @media (max-width: 600px) {
+            .sidebar { padding: 0 16px; }
+            .logo { font-size: 1.1rem; }
+            .nav-links li { padding: 16px 12px; font-size: 0.875rem; }
+            .header { flex-direction: column; align-items: flex-start; gap: 16px; padding: 20px 16px; }
+            .header h1 { font-size: 1.25rem; }
+            .header-actions { width: 100%; justify-content: space-between; }
+            .container { padding: 16px; }
+            th, td { padding: 16px; }
+            .modal { padding: 20px; }
+            .modal-actions { flex-direction: column; }
+            .modal-actions button { width: 100%; }
+        }
+
+        @media (max-width: 400px) {
+            .logo { display: none; }
+            .nav-links { width: 100%; justify-content: space-around; }
+            .header-actions { flex-direction: column-reverse; align-items: stretch; gap: 12px; }
+            .user-profile { text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">IT Helpdesk</div>
+        <ul class="nav-links">
+            <li class="active">Helpdesk Tickets</li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <h1>Ticket Management</h1>
+            <div class="header-actions">
+                <button class="btn-primary" onclick="openModal()">+ New Ticket</button>
+                <div class="user-profile">🔒 Secured Session</div>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="tabs">
+                <div class="tab active" id="tab-all" onclick="loadTickets('all')">All Tickets</div>
+                <div class="tab" id="tab-open" onclick="loadTickets('open')">Open Only</div>
+            </div>
+
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Employee</th>
+                            <th>Issue Details</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ticket-table-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="createModal">
+            <div class="modal">
+                <h2>Submit New Ticket</h2>
+                <form id="createTicketForm" onsubmit="createTicket(event)">
+                    <div class="form-group">
+                        <label for="employeeName">Employee Name</label>
+                        <input type="text" id="employeeName" required placeholder="e.g. John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label for="title">Issue Title</label>
+                        <input type="text" id="title" required placeholder="e.g. Broken Mouse">
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" rows="3" required placeholder="Describe the issue in detail..."></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                        <button type="submit" class="btn-primary">Submit Ticket</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentFilter = 'all';
+
+        document.addEventListener("DOMContentLoaded", () => loadTickets('all'));
+
+        async function loadTickets(filter) {
+            currentFilter = filter;
+            
+            document.getElementById('tab-all').classList.toggle('active', filter === 'all');
+            document.getElementById('tab-open').classList.toggle('active', filter === 'open');
+
+            const endpoint = filter === 'open' ? '/api/open' : '/api';
+
+            try {
+                const response = await fetch(endpoint);
+                const tickets = await response.json();
+                renderTable(tickets);
+            } catch (error) {
+                console.error("Error loading tickets:", error);
+            }
+        }
+
+        function renderTable(tickets) {
+            const tableBody = document.getElementById("ticket-table-body");
+            tableBody.innerHTML = ""; 
+
+            if (tickets.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="empty-state">No tickets found. You're all caught up! 🎉</td></tr>`;
+                return;
+            }
+
+            tickets.forEach(ticket => {
+                const tr = document.createElement("tr");
+                const isResolved = ticket.status === "RESOLVED";
+                const statusBadge = `<span class="badge ${isResolved ? 'badge-resolved' : 'badge-open'}">${ticket.status}</span>`;
+                const actionButton = isResolved 
+                    ? `<span class="text-muted">✓ Completed</span>`
+                    : `<button class="btn-primary" style="padding: 6px 12px;" onclick="resolveTicket(${ticket.id})">Resolve</button>`;
+
+                tr.innerHTML = `
+                    <td style="color: var(--text-muted); font-weight: 500;">#${ticket.id}</td>
+                    <td style="font-weight: 600;">${ticket.employeeName}</td>
+                    <td>
+                        <span class="issue-title">${ticket.title}</span>
+                        <span class="issue-desc">${ticket.description}</span>
+                    </td>
+                    <td>${statusBadge}</td>
+                    <td>${actionButton}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        async function createTicket(event) {
+            event.preventDefault(); 
+
+            const newTicket = {
+                employeeName: document.getElementById('employeeName').value,
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value
+            };
+
+            try {
+                const response = await fetch('/api', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newTicket)
+                });
+
+                if (response.ok) {
+                    closeModal();
+                    loadTickets(currentFilter);
+                } else {
+                    alert("Failed to create ticket. Please try again.");
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        async function resolveTicket(id) {
+            try {
+                const response = await fetch(`/api/${id}/resolve`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    loadTickets(currentFilter);
+                } else if (response.status === 409) {
+                    alert("⚠️ Conflict: This ticket has already been resolved by someone else!");
+                    loadTickets(currentFilter);
+                } else {
+                    alert("Action failed. Check your connection or permissions.");
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function openModal() {
+            document.getElementById('createModal').style.display = 'flex';
+            document.getElementById('createTicketForm').reset();
+        }
+
+        function closeModal() {
+            document.getElementById('createModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
+
+
