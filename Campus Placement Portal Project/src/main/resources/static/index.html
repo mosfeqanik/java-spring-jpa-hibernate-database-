@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Placement Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-200 font-sans min-h-screen">
+
+    <nav class="bg-slate-800 border-b border-slate-700 shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <h1 class="text-xl md:text-2xl font-bold text-blue-400">🎓 Placement Portal</h1>
+            <div id="authStatus" class="text-sm flex items-center">
+                <span id="currentUser" class="text-gray-400 mr-4">Not logged in</span>
+                <button onclick="logout()" id="logoutBtn" class="hidden text-red-400 hover:text-red-300 font-bold tracking-wide">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 py-6 md:py-8">
+
+        <div id="loginSection" class="max-w-md mx-auto bg-slate-800 p-6 md:p-8 rounded-xl shadow-2xl mt-10 border border-slate-700 mx-4 md:mx-auto">
+            <h2 class="text-xl font-bold mb-6 text-center text-white">System Login</h2>
+            <div class="space-y-4">
+                <input type="text" id="username" placeholder="Username" class="w-full bg-slate-700 border border-slate-600 rounded px-4 py-2 focus:outline-none focus:border-blue-500 text-white transition-colors">
+                <input type="password" id="password" placeholder="Password" class="w-full bg-slate-700 border border-slate-600 rounded px-4 py-2 focus:outline-none focus:border-blue-500 text-white transition-colors">
+                <button onclick="login()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-200">Log In</button>
+            </div>
+            <div id="loginError" class="text-red-400 text-sm mt-4 text-center hidden">Invalid credentials!</div>
+        </div>
+
+        <div id="dashboardSection" class="hidden">
+            
+            <div id="adminPanel" class="bg-slate-800 p-6 rounded-xl shadow-lg mb-8 border border-slate-700 hidden">
+                <h3 class="text-lg font-bold mb-4 text-emerald-400">➕ Add New Recruitment Drive</h3>
+                <div class="flex flex-col md:flex-row gap-4">
+                    <input type="text" id="companyName" placeholder="Company Name" class="w-full md:flex-1 bg-slate-700 border border-slate-600 rounded px-4 py-2 text-white focus:outline-none focus:border-emerald-500">
+                    <input type="text" id="role" placeholder="Role (e.g., SDE)" class="w-full md:flex-1 bg-slate-700 border border-slate-600 rounded px-4 py-2 text-white focus:outline-none focus:border-emerald-500">
+                    <input type="number" step="0.1" id="packageLPA" placeholder="Package (LPA)" class="w-full md:w-32 bg-slate-700 border border-slate-600 rounded px-4 py-2 text-white focus:outline-none focus:border-emerald-500">
+                    <button onclick="addDrive()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded transition">Add</button>
+                </div>
+                <div id="adminError" class="text-red-400 text-sm mt-2 hidden"></div>
+            </div>
+
+            <h3 class="text-xl font-bold mb-6 border-b border-slate-700 pb-2">Active Recruitment Drives</h3>
+            <div id="drivesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        let authHeader = "";
+
+        function login() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            authHeader = 'Basic ' + btoa(user + ':' + pass);
+
+            fetch('/api/view', {
+                headers: { 'Authorization': authHeader }
+            })
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById('loginSection').classList.add('hidden');
+                    document.getElementById('dashboardSection').classList.remove('hidden');
+                    document.getElementById('logoutBtn').classList.remove('hidden');
+                    document.getElementById('currentUser').innerText = 'Logged in as: ' + user;
+                    
+                    if (user === 'alice' || user === 'bob') {
+                        document.getElementById('adminPanel').classList.remove('hidden');
+                    }
+                    
+                    fetchDrives();
+                } else {
+                    document.getElementById('loginError').classList.remove('hidden');
+                }
+            });
+        }
+
+        function logout() {
+            authHeader = "";
+            document.getElementById('username').value = "";
+            document.getElementById('password').value = "";
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('logoutBtn').classList.add('hidden');
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('currentUser').innerText = 'Not logged in';
+        }
+
+        function fetchDrives() {
+            fetch('/api/view', {
+                headers: { 'Authorization': authHeader }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const grid = document.getElementById('drivesGrid');
+                grid.innerHTML = ''; 
+                
+                const currentUserText = document.getElementById('currentUser').innerText;
+                const isAdmin = currentUserText.includes('alice') || currentUserText.includes('bob');
+                
+                data.forEach(drive => {
+                    const card = document.createElement('div');
+                    card.className = "bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-700 relative hover:border-blue-500 transition duration-300";
+                    card.innerHTML = `
+                        <h4 class="text-xl font-bold text-white mb-1">${drive.companyName}</h4>
+                        <p class="text-blue-400 font-semibold mb-3">${drive.role}</p>
+                        <div class="inline-block bg-slate-700 text-emerald-400 px-3 py-1 rounded-full text-sm font-bold mb-4">
+                            ₹${drive.packageLPA} LPA
+                        </div>
+                        ${isAdmin ? 
+                        `<button onclick="deleteDrive(${drive.id})" class="absolute top-4 right-4 text-slate-500 hover:text-red-500 transition focus:outline-none p-2 rounded-full hover:bg-slate-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>` : ''}
+                    `;
+                    grid.appendChild(card);
+                });
+            });
+        }
+
+        function addDrive() {
+            const data = {
+                companyName: document.getElementById('companyName').value,
+                role: document.getElementById('role').value,
+                packageLPA: parseFloat(document.getElementById('packageLPA').value)
+            };
+
+            fetch('/api/manage/add', {
+                method: 'POST',
+                headers: {
+                    'Authorization': authHeader,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(res => {
+                if(res.ok) {
+                    document.getElementById('companyName').value = '';
+                    document.getElementById('role').value = '';
+                    document.getElementById('packageLPA').value = '';
+                    fetchDrives();
+                    document.getElementById('adminError').classList.add('hidden');
+                } else {
+                    document.getElementById('adminError').innerText = 'Failed to add drive. Check your permissions.';
+                    document.getElementById('adminError').classList.remove('hidden');
+                }
+            });
+        }
+
+        function deleteDrive(id) {
+            if(confirm('Are you sure you want to delete this drive?')) {
+                fetch(`/api/manage/remove/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': authHeader }
+                })
+                .then(res => {
+                    if(res.ok) {
+                        fetchDrives();
+                    } else {
+                        alert("Access Denied or Drive not found.");
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
+
+
